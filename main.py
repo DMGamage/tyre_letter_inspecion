@@ -1,8 +1,17 @@
 import cv2
-image = cv2.imread('01.jpg',0)
-blurred_image = cv2.GaussianBlur(image, (3, 3), 0)   #Please Check or addded Median Filter
 
-cv2.imshow('Image', blurred_image)
+
+image = cv2.imread('02.png')
+
+width = 1000
+height = 800
+
+
+resized_image = cv2.resize(image, (width, height))
+
+# Display the original and resized images
+cv2.imshow('Original Image', image)
+cv2.imshow('Resized Image', resized_image)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 
