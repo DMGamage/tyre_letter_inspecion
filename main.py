@@ -1,72 +1,34 @@
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
 
+# Load the image
+image = cv2.imread('result.png')
+resized_image = cv2.resize(image, (1024, 1024))
 
-image = cv2.imread('02.png')
+# Convert the image to HSV color space
+hsv_image = cv2.cvtColor(resized_image, cv2.COLOR_BGR2HSV)
 
-width = 1000
-height = 800
+# Extract the V (Value) channel
+v_channel = hsv_image[:, :, 2]
 
+# Convert the image to LAB color space
+lab_image = cv2.cvtColor(resized_image, cv2.COLOR_BGR2LAB)
 
-resized_image = cv2.resize(image, (width, height))
+# Extract the L (Luminance) channel
+l_channel = lab_image[:, :, 0]
 
-gray = cv2.cvtColor(resized_image, cv2.COLOR_BGR2GRAY)
+# Apply histogram equalization to the selected channels
+equalized_v_channel = cv2.equalizeHist(v_channel)
+equalized_l_channel = cv2.equalizeHist(l_channel)
 
-# Initialize default parameter values
-kernel_size = (5, 5)
-sigma = 0
-alpha = 1.5
-beta = -0.5
+# Apply Canny edge detector to the enhanced V channel
+edges = cv2.Canny(equalized_v_channel, 30, 100)
 
+# Display the original image, enhanced image, and edges
+cv2.imshow('Original Image', resized_image)
+cv2.imshow('Enhanced V Channel', equalized_v_channel)
+cv2.imshow('Canny Edges', edges)
 
-clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-equalized = clahe.apply(gray)
-
-unsharp = cv2.addWeighted(gray,1.5,equalized,-0.5,0)
-
-cv2.namedWindow('Unsharp Masking')
-
-cv2.createTrackbar('Kernel Size', 'Unsharp Masking', 5, 20, lambda x: None)
-cv2.createTrackbar('Sigma', 'Unsharp Masking', 0, 10, lambda x: None)
-cv2.createTrackbar('Alpha', 'Unsharp Masking', 15, 30, lambda x: None)
-cv2.createTrackbar('Beta', 'Unsharp Masking', 5, 10, lambda x: None)
-
-while True:
-    # Get current trackbar positions
-    kernel_size_value = cv2.getTrackbarPos('Kernel Size', 'Unsharp Masking')
-    sigma_value = cv2.getTrackbarPos('Sigma', 'Unsharp Masking')
-    alpha_value = cv2.getTrackbarPos('Alpha', 'Unsharp Masking') / 10.0
-    beta_value = cv2.getTrackbarPos('Beta', 'Unsharp Masking') / 10.0
-
-    # Update parameters if changed
-    if kernel_size_value % 2 == 1 and kernel_size_value != kernel_size[0]:
-        kernel_size = (kernel_size_value, kernel_size_value)
-    if sigma_value != sigma:
-        sigma = sigma_value
-    if alpha_value != alpha:
-        alpha = alpha_value
-    if beta_value != beta:
-        beta = beta_value
-
-    # Apply Gaussian blur
-    blurred = cv2.GaussianBlur(gray, kernel_size, sigma)
-
-    # Calculate the sharpened image
-    unsharp = cv2.addWeighted(gray, alpha, blurred, beta, 0)
-
-    cv2.imshow('Original Image', blurred)
-    cv2.imshow('Resized equalized', unsharp)
-
-
-
-    if cv2.waitKey(1) == 27:
-        break
-
-
-
-# Display the original and resized images
-
+# Wait for a key event and close the windows
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-
